@@ -1,0 +1,37 @@
+[project]
+name = "mklist"
+version = "0.1.0"
+description = "CLI-Tool zum Zusammenführen mehrerer gleich aufgebauter Excel-/CSV-Listen anhand einer Vorlage: Duplikate erkennen, Werte aggregieren, Ergebnis validieren und als Excel-Datei ausgeben."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [
+    { name = "RAUG" }
+]
+
+dependencies = [
+    "pandas>=2.2",
+    "openpyxl>=3.1",
+    "pydantic>=2.6",
+    "pandera>=0.19",
+    "click>=8.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+mklist = "mklist.cli:cli"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
