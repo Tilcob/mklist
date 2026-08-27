@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raug.example/mklist/template.schema.json",
+  "title": "mklist Vorlage",
+  "description": "Schema für eine mklist-Vorlagendatei: definiert Pflichtspalten, Duplikat-Erkennung, Aggregation, Ausgabe und optionale Plausibilitätsgrenzen.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["template_name", "version", "input", "duplicate_keys", "aggregate", "output"],
+  "properties": {
+    "template_name": {
+      "type": "string",
+      "description": "Anzeigename der Vorlage, z. B. für 'mklist list-templates'.",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "description": "Rein informative Versionskennzeichnung der Vorlage, keine Migrationslogik.",
+      "minLength": 1
+    },
+    "input": {
+      "$ref": "#/$defs/InputConfig"
+    },
+    "duplicate_keys": {
+      "type": "array",
+      "description": "Spalten, anhand derer zwei Zeilen als Duplikat gelten. Jeder Eintrag muss auch in input.required_columns vorkommen.",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "aggregate": {
+      "type": "array",
+      "description": "Regeln, wie Werte beim Zusammenführen von Duplikaten aggregiert werden.",
+      "items": { "$ref": "#/$defs/AggregateRule" },
+      "minItems": 1
+    },
+    "output": {
+      "$ref": "#/$defs/OutputConfig"
+    },
+    "validation_rules": {
+      "type": "object",
+      "description": "Optionale Plausibilitätsgrenzen für numerische Spalten im Ergebnis. Jeder Key muss laut input.column_types numerisch sein.",
+      "additionalProperties": { "$ref": "#/$defs/ValueRange" },
+      "default": {}
+    }
+  },
+  "$defs": {
+    "ColumnType": {
+      "type": "string",
+      "enum": ["string", "int", "float", "date"]
+    },
+    "AggregateMethod": {
+      "type": "string",
+      "enum": ["sum", "mean", "count"]
+    },
+    "InputConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_columns", "column_types", "allow_missing_values"],
+      "properties": {
+        "required_columns": {
+          "type": "array",
+          "description": "Spalten, die in jeder Eingabedatei vorhanden sein müssen.",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "column_types": {
+          "type": "object",
+          "description": "Erwarteter Typ pro Spalte. Jeder Key muss in required_columns vorkommen.",
+          "additionalProperties": { "$ref": "#/$defs/ColumnType" }
+        },
+        "allow_missing_values": {
+          "type": "object",
+          "description": "Ob eine Spalte leere Werte enthalten darf.",
+          "additionalProperties": { "type": "boolean" }
+        }
+      }
+    },
+    "AggregateRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["column", "method"],
+      "properties": {
+        "column": {
+          "type": "string",
+          "description": "Spaltenname, der aggregiert wird. Muss in required_columns vorkommen und bei sum/mean numerisch sein."
+        },
+        "method": {
+          "$ref": "#/$defs/AggregateMethod"
+        }
+      }
+    },
+    "OutputConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns_order", "sort_by", "filename_suffix"],
+      "properties": {
+        "columns_order": {
+          "type": "array",
+          "description": "Reihenfolge der Spalten im Ergebnis. Jeder Eintrag muss ein duplicate_keys-Feld oder eine aggregate-Spalte sein.",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "sort_by": {
+          "type": "array",
+          "description": "Spalten, nach denen das Ergebnis sortiert wird.",
+          "items": { "type": "string" }
+        },
+        "filename_suffix": {
+          "type": "string",
+          "description": "Suffix für den Namen der Ausgabedatei."
+        }
+      }
+    },
+    "ValueRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "max": {
+          "type": ["number", "null"],
+          "default": null
+        }
+      }
+    }
+  }
+}
