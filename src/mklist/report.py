@@ -422,6 +422,19 @@ def render_html(report_data: ReportData) -> str:
 # ---------------------------------------------------------------------------
 
 
+def default_report_base(input_dir: Path | str, template: TemplateConfig) -> Path:
+    """Default-Basisname für den Report, falls --report nicht angegeben ist:
+    <input-dir>/report_<template_name> (ohne Endung – write_report() hängt
+    .md/.html an). Nutzt denselben Dateinamen-Sanitizer wie
+    writer.default_output_path(), damit beide Default-Pfade konsistent
+    denselben Namen verwenden."""
+    from .writer import _sanitize_filename
+
+    input_dir = Path(input_dir)
+    safe_name = _sanitize_filename(template.template_name)
+    return input_dir / f"report_{safe_name}"
+
+
 def _resolve_report_base(path: Path) -> Path:
     """Falls der übergebene Pfad bereits mit .md/.html endet, wird die
     Endung entfernt, um Doppel-Endungen wie 'report.md.md' zu vermeiden.
