@@ -169,13 +169,25 @@ class TemplateConfig(_StrictModel):
                         f"existiert daher nicht im Ergebnis."
                     )
 
-        # Regel 5: validation_rules-Keys müssen numerisch sein
+        # Regel 5: validation_rules-Keys müssen (a) numerisch sein UND
+        # (b) tatsächlich im Ergebnis existieren (duplicate_keys oder eine
+        # aggregate-Spalte) – sonst gäbe es in Ebene 3 (Ergebnis-Validierung)
+        # gar keine Spalte, auf die sich min/max beziehen könnten. Diese
+        # zweite Teilprüfung schließt eine ursprünglich offen gelassene
+        # Lücke im Konzept (siehe mklist-pydantic-model-konzept.md).
         for column in self.validation_rules:
             if column not in numeric_columns:
                 errors.append(
                     f"validation_rules: Spalte '{column}' ist laut "
                     f"input.column_types nicht numerisch (int/float) – "
                     f"min/max sind hier nicht sinnvoll."
+                )
+            elif column not in result_columns:
+                errors.append(
+                    f"validation_rules: Spalte '{column}' ist weder in "
+                    f"duplicate_keys noch eine aggregate-Spalte und "
+                    f"existiert daher nicht im Ergebnis, auf das sich "
+                    f"validation_rules bezieht."
                 )
 
         if errors:

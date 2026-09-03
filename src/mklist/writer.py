@@ -47,7 +47,7 @@ def default_output_path(input_dir: Path | str, template: TemplateConfig) -> Path
     input_dir = Path(input_dir)
     safe_name = _sanitize_filename(template.template_name)
     suffix = template.output.filename_suffix or ""
-    return input_dir / f"ergebnis_{safe_name}{suffix}.xlsx"
+    return input_dir / f"merged_{safe_name}{suffix}.xlsx"
 
 
 def resolve_output_path(

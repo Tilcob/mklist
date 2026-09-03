@@ -116,6 +116,22 @@ def test_rule5_validation_rule_on_non_numeric_column():
         TemplateConfig.model_validate(data)
 
 
+def test_rule5_validation_rule_on_numeric_column_not_in_result():
+    # Schließt die ursprünglich offene Lücke: "Gewicht" ist zwar numerisch,
+    # wird aber weder gruppiert (duplicate_keys) noch aggregiert (aggregate)
+    # und existiert daher im Ergebnis-DataFrame gar nicht.
+    data = _valid_template_dict()
+    data["input"]["required_columns"].append("Gewicht")
+    data["input"]["column_types"]["Gewicht"] = "float"
+    data["input"]["allow_missing_values"]["Gewicht"] = False
+    data["validation_rules"] = {"Gewicht": {"min": 0}}
+    with pytest.raises(
+        ValidationError,
+        match="validation_rules.*Gewicht.*existiert daher nicht im Ergebnis",
+    ):
+        TemplateConfig.model_validate(data)
+
+
 # -- extra="forbid": unbekannte Felder sind ein Fehler -----------------------
 
 
