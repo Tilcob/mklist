@@ -21,6 +21,7 @@ from pathlib import Path
 
 import click
 
+from . import __version__
 from .aggregator import merge_and_aggregate
 from .loader import FileLoadError, load_input_files
 from .report import (
@@ -38,20 +39,54 @@ EXIT_SUCCESS = 0
 EXIT_ERROR = 1
 EXIT_SUCCESS_WITH_WARNINGS = 2
 
+_GROUP_EPILOG = """\
+\b
+Exit Codes:
+  0  Erfolg, keine Probleme
+  1  Abbruch-Fehler (ungueltige Vorlage, fehlende Pflichtspalte, Summen-Check fehlgeschlagen, ...)
+  2  Erfolgreich, aber mit Warnungen (z. B. unbekannte Spalten in einer Eingabedatei)
 
-@click.group()
+\b
+Beispiele:
+  mklist validate-template --template templates\\standard.json
+  mklist list-templates --template-dir templates\\
+  mklist run --template templates\\standard.json --input-dir messwerte\\
+  mklist run --template templates\\standard.json --input-dir messwerte\\ --dry-run
+
+Mehr zu jedem Befehl: mklist COMMAND --help
+"""
+
+
+@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.version_option(version=__version__, prog_name="mklist")
 def cli() -> None:
-    """mklist – Zusammenführen mehrerer gleich aufgebauter Excel-/CSV-Listen
+    """mklist - Zusammenfuehren mehrerer gleich aufgebauter Excel-/CSV-Listen
     anhand einer Vorlage: Duplikate erkennen, Werte aggregieren, Ergebnis
-    validieren und als Excel-Datei ausgeben."""
+    validieren und als Excel-Datei ausgeben.
 
+    \b
+    Verfuegbare Befehle:
+      run                Listen anhand einer Vorlage zusammenfuehren
+      validate-template  Nur die Vorlage pruefen, ohne Eingabedateien anzufassen
+      list-templates     Vorlagen in einem Ordner mit Name/Version auflisten
+    """
+
+
+cli.epilog = _GROUP_EPILOG
 
 # ---------------------------------------------------------------------------
 # mklist validate-template
 # ---------------------------------------------------------------------------
 
 
-@cli.command("validate-template")
+_VALIDATE_TEMPLATE_EPILOG = """\
+\b
+Beispiel:
+  mklist validate-template --template templates\\standard.json
+"""
+
+
+@cli.command("validate-template", epilog=_VALIDATE_TEMPLATE_EPILOG)
 @click.option(
     "--template",
     required=True,
@@ -59,7 +94,11 @@ def cli() -> None:
     help="Pfad zur Vorlagen-JSON-Datei.",
 )
 def validate_template_command(template: Path) -> None:
-    """Prüft nur die Vorlage, ohne Eingabedateien anzufassen."""
+    """Prueft nur die Vorlage: strukturell (Pflichtfelder, Typen) und
+    inhaltlich (z. B. referenzieren duplicate_keys tatsaechlich
+    vorhandene Pflichtspalten). Fasst keine Eingabedateien an.
+
+    Exit Code 0 bei gueltiger Vorlage, 1 bei ungueltiger."""
     try:
         config = load_template(template)
     except TemplateLoadError as exc:
@@ -75,7 +114,14 @@ def validate_template_command(template: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@cli.command("list-templates")
+_LIST_TEMPLATES_EPILOG = """\
+\b
+Beispiel:
+  mklist list-templates --template-dir templates\\
+"""
+
+
+@cli.command("list-templates", epilog=_LIST_TEMPLATES_EPILOG)
 @click.option(
     "--template-dir",
     required=True,
@@ -83,7 +129,9 @@ def validate_template_command(template: Path) -> None:
     help="Ordner mit Vorlagen-JSON-Dateien.",
 )
 def list_templates_command(template_dir: Path) -> None:
-    """Listet alle Vorlagen (*.json) in einem Ordner mit Name und Version auf."""
+    """Listet alle Vorlagen (*.json) in einem Ordner mit Name und Version
+    auf. Ungueltige Vorlagen werden markiert statt den Befehl
+    abzubrechen."""
     json_files = sorted(template_dir.glob("*.json"))
 
     if not json_files:
@@ -104,7 +152,20 @@ def list_templates_command(template_dir: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-@cli.command("run")
+_RUN_EPILOG = """\
+\b
+Beispiele:
+  mklist run --template templates\\standard.json --input-dir messwerte\\
+  mklist run --template templates\\standard.json --input-dir messwerte\\ --output ergebnis.xlsx --report report
+  mklist run --template templates\\standard.json --input-dir messwerte\\ --dry-run
+  mklist run --template templates\\standard.json --input-dir messwerte\\ --strict
+
+\b
+Exit Codes: 0 Erfolg | 1 Fehler | 2 Erfolg mit Warnungen
+"""
+
+
+@cli.command("run", epilog=_RUN_EPILOG)
 @click.option(
     "--template",
     required=True,
@@ -150,8 +211,15 @@ def run_command(
     dry_run: bool,
     strict: bool,
 ) -> None:
-    """Führt Listen anhand einer Vorlage zusammen: Duplikate erkennen,
-    aggregieren, validieren, als Excel-Datei ausgeben."""
+    """Fuehrt Listen anhand einer Vorlage zusammen.
+
+    Liest alle .xlsx/.xls/.csv-Dateien in INPUT-DIR ein, prueft sie gegen
+    die Vorlage, erkennt Duplikate anhand der duplicate_keys, aggregiert
+    die konfigurierten Spalten und schreibt das Ergebnis als Excel-Datei.
+    Bricht den gesamten Lauf ab, sobald irgendeine Datei einen Fehler hat
+    (keine Vorlage/Ausgabe wird bei --strict-Eskalation "nur teilweise"
+    zusammengefuehrt). Ein ausfuehrlicher Report (.md + .html) wird bei
+    jedem Lauf erzeugt, auch bei --dry-run oder bei einem Fehler."""
 
     # -- Phase 1: Vorlage laden ----------------------------------------
     try:

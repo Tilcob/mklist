@@ -75,7 +75,7 @@ def test_run_success_exit_code_0(tmp_path):
     assert result.exit_code == 0, result.output
     assert "Status: success" in result.output
 
-    output_files = list(input_dir.glob("ergebnis_*.xlsx"))
+    output_files = list(input_dir.glob("merged_*.xlsx"))
     assert len(output_files) == 1
     df = pd.read_excel(output_files[0])
     assert set(df["Artikelnummer"]) == {"A1", "A2"}
@@ -102,7 +102,7 @@ def test_run_merges_duplicates_across_files(tmp_path):
     )
 
     assert result.exit_code == 0, result.output
-    output_files = list(input_dir.glob("ergebnis_*.xlsx"))
+    output_files = list(input_dir.glob("merged_*.xlsx"))
     df = pd.read_excel(output_files[0])
 
     assert len(df) == 2  # A1/rot zusammengefasst, A2/blau einzeln
@@ -133,7 +133,7 @@ def test_run_unknown_column_warning_exit_code_2(tmp_path):
     assert result.exit_code == 2, result.output
     assert "Warnungen" in result.output
     # Ausgabedatei wird trotz Warnung geschrieben (Warnung != Abbruch-Fehler)
-    assert list(input_dir.glob("ergebnis_*.xlsx"))
+    assert list(input_dir.glob("merged_*.xlsx"))
 
 
 def test_run_unknown_column_warning_appears_in_report(tmp_path):
@@ -195,7 +195,7 @@ def test_run_missing_required_column_does_not_merge_other_valid_files(tmp_path):
     )
 
     assert result.exit_code == 1
-    assert not list(input_dir.glob("ergebnis_*.xlsx"))
+    assert not list(input_dir.glob("merged_*.xlsx"))
 
 
 # ---------------------------------------------------------------------------
@@ -223,7 +223,7 @@ def test_run_dry_run_does_not_write_output_but_writes_report(tmp_path):
     )
 
     assert result.exit_code == 0, result.output
-    assert not list(input_dir.glob("ergebnis_*.xlsx"))
+    assert not list(input_dir.glob("merged_*.xlsx"))
     report_md = list(input_dir.glob("report_*.md"))
     assert report_md
     assert "DRY RUN" in report_md[0].read_text(encoding="utf-8")
@@ -258,7 +258,7 @@ def test_run_strict_escalates_warning_to_error(tmp_path):
     )
 
     assert result.exit_code == 1, result.output
-    assert not list(input_dir.glob("ergebnis_*.xlsx"))
+    assert not list(input_dir.glob("merged_*.xlsx"))
 
 
 # ---------------------------------------------------------------------------

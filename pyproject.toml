@@ -1,6 +1,6 @@
 [project]
 name = "mklist"
-version = "1.0.0"
+version = "1.1.0"
 description = "CLI-Tool zum Zusammenführen mehrerer gleich aufgebauter Excel-/CSV-Listen anhand einer Vorlage: Duplikate erkennen, Werte aggregieren, Ergebnis validieren und als Excel-Datei ausgeben."
 readme = "README.md"
 requires-python = ">=3.10"
