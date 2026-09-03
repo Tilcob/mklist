@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<title>mklist Report – Standard-Auswertung</title>
+<style>
+body { font-family: sans-serif; margin: 2rem; color: #1a1a1a; }
+h1 { border-bottom: 2px solid #ccc; padding-bottom: 0.3rem; }
+h2 { margin-top: 2rem; }
+.status-success { color: #1a7a1a; font-weight: bold; }
+.status-success_with_warnings { color: #b36b00; font-weight: bold; }
+.status-error { color: #b30000; font-weight: bold; }
+.status-ok { color: #1a7a1a; }
+.status-warning { color: #b36b00; }
+.file-block { border-left: 4px solid #ccc; padding-left: 1rem; margin-bottom: 1rem; }
+.file-block.status-error { border-left-color: #b30000; }
+.file-block.status-warning { border-left-color: #b36b00; }
+.file-block.status-ok { border-left-color: #1a7a1a; }
+.dry-run-banner { background: #fff3cd; border: 1px solid #f0c674; padding: 0.75rem; margin-bottom: 1.5rem; }
+table { border-collapse: collapse; margin-top: 0.5rem; }
+td, th { border: 1px solid #ccc; padding: 0.3rem 0.6rem; text-align: left; }
+</style></head><body>
+<h1>mklist Report – Standard-Auswertung</h1>
+<h2>Kopfbereich</h2><ul>
+<li>Vorlage: Standard-Auswertung (Version 1.0)</li>
+<li>Zeitpunkt: 2026-09-03 09:23:38</li>
+<li>Eingabeordner: examples\messwerte</li>
+<li>Gefundene Dateien: 2</li>
+<li>Modus: normal</li>
+<li>Ausgabepfad: examples\messwerte\ergebnis_Standard-Auswertung_zusammengefasst.xlsx</li>
+</ul>
+<h2>Zusammenfassung</h2><ul>
+<li>Status: <span class="status-success_with_warnings">Erfolg mit Warnungen</span></li>
+<li>Verarbeitete Dateien: 2</li>
+<li>Warnungen gesamt: 1</li>
+<li>Zusammengeführte Duplikate: 2</li>
+<li>Summen-Check: <span class="status-ok">bestanden</span></li>
+</ul>
+<h2>Datei-Details</h2>
+<div class="file-block status-warning">
+<h3>messwerte_august.csv – <span class="status-warning">Warnung</span></h3>
+<p>Zeilen: 2</p>
+<ul>
+<li class="status-warning">Warnung: Unbekannte Spalte 'Kommentar'.</li>
+</ul>
+</div>
+<div class="file-block status-ok">
+<h3>messwerte_juli.csv – <span class="status-ok">OK</span></h3>
+<p>Zeilen: 4</p>
+</div>
+<h2>Aggregations-Ergebnis</h2>
+<p>Zeilen vor Aggregation: 6<br>
+Zeilen im Ergebnis: 4</p>
+<table><tr><th>Spalte</th><th>Summe vorher</th><th>Summe nachher</th></tr>
+<tr><td>Laufmeter</td><td>39.25</td><td>39.25</td></tr>
+</table>
+</body></html>

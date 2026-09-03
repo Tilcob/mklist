@@ -203,25 +203,36 @@ def run_command(
         not r.is_valid for r in file_validation_results
     )
 
-    # -- Phase 4 + 5: Zusammenführen, Aggregation, Ergebnis-Validierung -
+    # -- Phase 4-6: Zusammenführen, Aggregation, Ergebnis-Validierung,
+    # Ausgabe schreiben. In try/except, damit ein unerwarteter Fehler in
+    # dieser Kette (z. B. eine bislang nicht bedachte Datenkonstellation)
+    # nie als roher Python-Traceback beim Nutzer ankommt, sondern als
+    # verständliche Meldung mit Exit Code 1 (Implementierungsplan, Phase 9:
+    # "keine rohen Python-Tracebacks im Report/CLI-Output").
     # Läuft nur, wenn KEINE Datei einen Abbruch-Fehler hat (siehe Modul-
     # Docstring: kein teilweises Zusammenführen "nur der guten Dateien").
     aggregation_result = None
     result_validation = None
-
-    if not has_file_errors:
-        valid_dfs = [r.df for r in file_validation_results if r.df is not None]
-        aggregation_result = merge_and_aggregate(valid_dfs, config)
-        result_validation = validate_result(aggregation_result, config)
-
-    # -- Phase 6: Ausgabe schreiben (außer bei --dry-run oder Fehlern) --
     output_path = resolve_output_path(output, input_dir, config)
     file_was_written = False
 
-    if aggregation_result is not None and result_validation is not None:
-        if result_validation.is_valid and not dry_run:
-            write_result(aggregation_result.df, output_path)
-            file_was_written = True
+    try:
+        if not has_file_errors:
+            valid_dfs = [r.df for r in file_validation_results if r.df is not None]
+            aggregation_result = merge_and_aggregate(valid_dfs, config)
+            result_validation = validate_result(aggregation_result, config)
+
+            if result_validation.is_valid and not dry_run:
+                write_result(aggregation_result.df, output_path)
+                file_was_written = True
+    except Exception as exc:  # noqa: BLE001 - bewusst breit, siehe Kommentar oben
+        click.echo(
+            f"Unerwarteter Fehler bei Aggregation/Ausgabe: {exc}\n"
+            "Der Lauf wurde abgebrochen. Bitte prüfen, ob Vorlage und "
+            "Eingabedateien zueinander passen.",
+            err=True,
+        )
+        sys.exit(EXIT_ERROR)
 
     # -- Phase 7: Report bauen und schreiben -----------------------------
     report_data = build_report(

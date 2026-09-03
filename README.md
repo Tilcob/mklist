@@ -38,7 +38,17 @@ mklist validate-template --template templates/standard.json
 mklist list-templates --template-dir templates/
 ```
 
-### Listen zusammenführen
+### Schnellstart mit Beispieldaten
+
+Das Projekt enthält ein fertiges Beispiel unter `examples/messwerte/` (zwei CSV-Dateien, passend zur Vorlage `templates/standard.json`, inklusive eines Duplikats über beide Dateien hinweg und einer absichtlich unbekannten Spalte `Kommentar` zur Demonstration der Warnung):
+
+```bash
+mklist run --template templates/standard.json --input-dir examples/messwerte/
+```
+
+Erwartetes Ergebnis: `Artikelnummer A100/rot` kommt in beiden Dateien vor (12.5 + 3.25 + 5.0 Laufmeter) und wird zu **20.75** zusammengefasst; die restlichen Artikel bleiben unverändert. Wegen der Spalte `Kommentar` in `messwerte_august.csv` (nicht Teil der Vorlage) endet der Lauf mit **Exit Code 2** (Erfolg mit Warnung) statt `0` — gut geeignet, um den Report einmal in beiden Ausprägungen zu sehen.
+
+### Listen zusammenführen (eigene Daten)
 
 ```bash
 mklist run \
@@ -112,6 +122,10 @@ Ein Beispiel und das zugehörige JSON-Schema liegen unter `templates/`. Editoren
 ├── templates/
 │   ├── standard.json
 │   └── template.schema.json
+├── examples/
+│   └── messwerte/            # Beispieldaten für den Schnellstart
+│       ├── messwerte_juli.csv
+│       └── messwerte_august.csv
 └── tests/
 ```
 

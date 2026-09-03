@@ -1,0 +1,29 @@
+{
+  "template_name": "Standard-Auswertung",
+  "version": "1.0",
+  "input": {
+    "required_columns": ["Artikelnummer", "Farbe", "Laufmeter"],
+    "column_types": {
+      "Artikelnummer": "string",
+      "Farbe": "string",
+      "Laufmeter": "float"
+    },
+    "allow_missing_values": {
+      "Artikelnummer": false,
+      "Farbe": false,
+      "Laufmeter": false
+    }
+  },
+  "duplicate_keys": ["Artikelnummer", "Farbe"],
+  "aggregate": [
+    { "column": "Laufmeter", "method": "sum" }
+  ],
+  "output": {
+    "columns_order": ["Artikelnummer", "Farbe", "Laufmeter"],
+    "sort_by": ["Artikelnummer"],
+    "filename_suffix": "_zusammengefasst"
+  },
+  "validation_rules": {
+    "Laufmeter": { "min": 0 }
+  }
+}
